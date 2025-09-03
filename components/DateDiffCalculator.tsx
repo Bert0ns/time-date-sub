@@ -121,7 +121,7 @@ export default function DateDiffCalculator() {
   async function copyText(text: string, successMsgKey: string) {
     try {
       if (!text) return;
-      const canUseClipboard = typeof navigator !== "undefined" && !!navigator.clipboard?.writeText && (typeof window === "undefined" || window.isSecureContext !== false);
+      const canUseClipboard = typeof navigator !== "undefined" && !!navigator.clipboard?.writeText && (typeof window === "undefined" || window.isSecureContext);
       if (canUseClipboard) await navigator.clipboard.writeText(text);
       else if (!fallbackCopyText(text)) throw new Error("fallback failed");
       setToastType("success");
