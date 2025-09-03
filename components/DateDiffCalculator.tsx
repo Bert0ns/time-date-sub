@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import DateTimeField from "./DateTimeField";
+import Toast from "./Toast";
 
 function parseLocalDateTime(value: string): Date | null {
   if (!value) return null;
@@ -80,24 +81,18 @@ export default function DateDiffCalculator() {
     setEndValue("");
   };
 
-  // Copia negli appunti
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
-  function buildClipboardText() {
-    if (!diff || !startDate || !endDate) return "";
-    const lines = [
-      `Differenza tra ${startValue || "-"} e ${endValue || "-"}`,
-      `Stato: ${statusLabel}`,
-      `Scomposizione: ${diff.human}`,
-      `Totali: ${diff.totalHours} ore | ${diff.totalMinutes} minuti | ${diff.totalSeconds} secondi`,
-    ];
-    return lines.join("\n");
-  }
+  // Toast state
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
+
+  // Copia negli appunti (centralizzato)
   function fallbackCopyText(text: string) {
     try {
       const ta = document.createElement("textarea");
       ta.value = text;
       ta.setAttribute("readonly", "");
-      ta.style.position = "fixed"; // evita scroll
+      ta.style.position = "fixed";
       ta.style.left = "-9999px";
       document.body.appendChild(ta);
       const selection = document.getSelection();
@@ -114,23 +109,39 @@ export default function DateDiffCalculator() {
       return false;
     }
   }
-  async function handleCopy() {
+
+  async function copyText(text: string, successMsg = "Copiato negli appunti") {
     try {
-      const text = buildClipboardText();
       if (!text) return;
       const canUseClipboard = typeof navigator !== "undefined" && !!navigator.clipboard?.writeText && (typeof window === "undefined" || window.isSecureContext !== false);
-      if (canUseClipboard) {
-        await navigator.clipboard.writeText(text);
-        setCopyState("copied");
-      } else {
-        const ok = fallbackCopyText(text);
-        setCopyState(ok ? "copied" : "error");
-      }
-      setTimeout(() => setCopyState("idle"), 1500);
+      if (canUseClipboard) await navigator.clipboard.writeText(text);
+      else if (!fallbackCopyText(text)) throw new Error("fallback failed");
+      setToastType("success");
+      setToastMsg(successMsg);
+      setToastOpen(true);
+      setTimeout(() => setToastOpen(false), 1600);
     } catch {
-      setCopyState("error");
-      setTimeout(() => setCopyState("idle"), 1500);
+      setToastType("error");
+      setToastMsg("Impossibile copiare");
+      setToastOpen(true);
+      setTimeout(() => setToastOpen(false), 1800);
     }
+  }
+
+  function buildClipboardText() {
+    if (!diff || !startDate || !endDate) return "";
+    const lines = [
+      `Differenza tra ${startValue || "-"} e ${endValue || "-"}`,
+      `Stato: ${statusLabel}`,
+      `Scomposizione: ${diff.human}`,
+      `Totali: ${diff.totalHours} ore | ${diff.totalMinutes} minuti | ${diff.totalSeconds} secondi`,
+    ];
+    return lines.join("\n");
+  }
+  async function handleCopyAll() {
+    const text = buildClipboardText();
+    if (!text) return;
+    await copyText(text, "Risultato copiato");
   }
 
   return (
@@ -157,39 +168,110 @@ export default function DateDiffCalculator() {
             {startDate && endDate && diff && (
               <div className="ml-auto flex items-center gap-2">
                 <button
-                  onClick={handleCopy}
+                  onClick={handleCopyAll}
                   className="px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-black/10 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5"
                 >
                   Copia risultato
                 </button>
-                <span aria-live="polite" className="text-xs text-foreground/60 min-w-14 text-right">
-                  {copyState === "copied" ? "Copiato" : copyState === "error" ? "Errore" : ""}
-                </span>
               </div>
             )}
           </div>
 
           {startDate && endDate && diff && (
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              {/* Scomposizione con icona copia */}
               <div className="rounded-lg border border-black/10 dark:border-white/15 p-3">
-                <div className="text-xs text-foreground/60">Scomposizione</div>
+                <div className="flex items-center gap-2">
+                  <div className="text-xs text-foreground/60">Scomposizione</div>
+                  <button
+                    onClick={() => copyText(diff.human, "Scomposizione copiata")}
+                    className="ml-auto p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5"
+                    aria-label="Copia scomposizione"
+                    title="Copia scomposizione"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                </div>
                 <div className="mt-1 text-base font-semibold">{diff.human}</div>
               </div>
+
+              {/* Totali con icone copia per riga */}
               <div className="rounded-lg border border-black/10 dark:border-white/15 p-3">
                 <div className="text-xs text-foreground/60">Totali</div>
                 <div className="mt-2 text-sm leading-6">
-                  <div><span className="text-foreground/60">Ore: </span><span className="font-medium">{diff.totalHours}</span></div>
-                  <div><span className="text-foreground/60">Minuti: </span><span className="font-medium">{diff.totalMinutes}</span></div>
-                  <div><span className="text-foreground/60">Secondi: </span><span className="font-medium">{diff.totalSeconds}</span></div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1"><span className="text-foreground/60">Ore: </span><span className="font-medium">{diff.totalHours}</span></div>
+                    <button onClick={() => copyText(`${diff.totalHours}`, "Ore totali copiate")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label="Copia ore totali" title="Copia ore">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1"><span className="text-foreground/60">Minuti: </span><span className="font-medium">{diff.totalMinutes}</span></div>
+                    <button onClick={() => copyText(`${diff.totalMinutes}`, "Minuti totali copiati")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label="Copia minuti totali" title="Copia minuti">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1"><span className="text-foreground/60">Secondi: </span><span className="font-medium">{diff.totalSeconds}</span></div>
+                    <button onClick={() => copyText(`${diff.totalSeconds}`, "Secondi totali copiati")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label="Copia secondi totali" title="Copia secondi">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {/* Dettaglio con icone copia per riga */}
               <div className="rounded-lg border border-black/10 dark:border-white/15 p-3">
                 <div className="text-xs text-foreground/60">Dettaglio</div>
                 <div className="mt-2 text-sm leading-6">
-                  <div><span className="text-foreground/60">Giorni: </span><span className="font-medium">{diff.days}</span></div>
-                  <div><span className="text-foreground/60">Ore: </span><span className="font-medium">{diff.hours}</span></div>
-                  <div><span className="text-foreground/60">Minuti: </span><span className="font-medium">{diff.minutes}</span></div>
-                  <div><span className="text-foreground/60">Secondi: </span><span className="font-medium">{diff.seconds}</span></div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1"><span className="text-foreground/60">Giorni: </span><span className="font-medium">{diff.days}</span></div>
+                    <button onClick={() => copyText(`${diff.days}`, "Giorni copiati")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label="Copia giorni" title="Copia giorni">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1"><span className="text-foreground/60">Ore: </span><span className="font-medium">{diff.hours}</span></div>
+                    <button onClick={() => copyText(`${diff.hours}`, "Ore copiate")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label="Copia ore" title="Copia ore">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1"><span className="text-foreground/60">Minuti: </span><span className="font-medium">{diff.minutes}</span></div>
+                    <button onClick={() => copyText(`${diff.minutes}`, "Minuti copiati")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label="Copia minuti" title="Copia minuti">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1"><span className="text-foreground/60">Secondi: </span><span className="font-medium">{diff.seconds}</span></div>
+                    <button onClick={() => copyText(`${diff.seconds}`, "Secondi copiati")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label="Copia secondi" title="Copia secondi">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -200,6 +282,9 @@ export default function DateDiffCalculator() {
           Nota: il calcolo usa date locali; fusi orari e ora legale possono influenzare i risultati vicino ai cambi.
         </p>
       </div>
+
+      {/* Toast globale */}
+      <Toast open={toastOpen} message={toastMsg} type={toastType} onClose={() => setToastOpen(false)} />
     </section>
   );
 }
