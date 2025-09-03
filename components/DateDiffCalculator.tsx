@@ -4,6 +4,8 @@ import React, { useMemo, useState } from "react";
 import DateTimeField from "./DateTimeField";
 import Toast from "./Toast";
 import { useI18n } from "./I18nProvider";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 function parseLocalDateTime(value: string): Date | null {
   if (!value) return null;
@@ -156,20 +158,20 @@ export default function DateDiffCalculator() {
 
   return (
     <section className="w-full max-w-3xl mx-auto">
-      <div className="rounded-2xl border border-black/10 dark:border-white/15 bg-gradient-to-b from-background/80 to-background/60 shadow-lg p-4 sm:p-6">
+      <Card className="p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <DateTimeField id="start" label={t("field.start")} value={startValue} onChangeAction={setStartValue} />
           <DateTimeField id="end" label={t("field.end")} value={endValue} onChangeAction={setEndValue} />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <button onClick={() => setNow("start")} className="px-3 py-1.5 text-sm rounded-lg border border-black/10 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5">{t("btn.nowStart")}</button>
-          <button onClick={() => setNow("end")} className="px-3 py-1.5 text-sm rounded-lg border border-black/10 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5">{t("btn.nowEnd")}</button>
-          <button onClick={swap} className="px-3 py-1.5 text-sm rounded-lg border border-black/10 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5">{t("btn.swap")}</button>
-          <button onClick={clearAll} className="ml-auto px-3 py-1.5 text-sm rounded-lg border border-black/10 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5">{t("btn.clear")}</button>
+          <Button onClick={() => setNow("start")} variant="outline">{t("btn.nowStart")}</Button>
+          <Button onClick={() => setNow("end")} variant="outline">{t("btn.nowEnd")}</Button>
+          <Button onClick={swap} variant="outline">{t("btn.swap")}</Button>
+          <Button onClick={clearAll} variant="outline" className="ml-auto">{t("btn.clear")}</Button>
         </div>
 
-        <div className="mt-6 rounded-xl bg-background/70 border border-black/10 dark:border-white/15 p-4">
+        <div className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-4">
           <div className="flex items-center gap-2">
             <div>
               <div className="text-xs uppercase tracking-wide text-foreground/60">{t("status.label")}</div>
@@ -177,121 +179,110 @@ export default function DateDiffCalculator() {
             </div>
             {startDate && endDate && diff && (
               <div className="ml-auto flex items-center gap-2">
-                <button
-                  onClick={handleCopyAll}
-                  className="px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-black/10 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5"
-                >
+                <Button onClick={handleCopyAll} variant="outline" className="text-xs sm:text-sm h-8 px-3">
                   {t("btn.copyAll")}
-                </button>
+                </Button>
               </div>
             )}
           </div>
 
           {startDate && endDate && diff && (
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
-              {/* Scomposizione */}
-              <div className="rounded-lg border border-black/10 dark:border-white/15 p-3">
-                <div className="flex items-center gap-2">
-                  <div className="text-xs text-foreground/60">{t("card.breakdown")}</div>
-                  <button
-                    onClick={() => copyText(diff.human, "copy.breakdown")}
-                    className="ml-auto p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5"
-                    aria-label={t("copy.breakdown")}
-                    title={t("copy.breakdown")}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="mt-1 text-base font-semibold">{diff.human}</div>
-              </div>
-
-              {/* Totali */}
-              <div className="rounded-lg border border-black/10 dark:border-white/15 p-3">
-                <div className="text-xs text-foreground/60">{t("card.totals")}</div>
-                <div className="mt-2 text-sm leading-6">
+              <Card>
+                <CardTitle className="p-3">{t("card.breakdown")}</CardTitle>
+                <CardContent>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1"><span className="text-foreground/60">{t("totals.hours")}: </span><span className="font-medium">{diff.totalHours}</span></div>
-                    <button onClick={() => copyText(`${diff.totalHours}`, "copy.totalHours")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label={t("copy.totalHours")} title={t("copy.totalHours")}>
+                    <div className="text-base font-semibold flex-1">{diff.human}</div>
+                    <Button onClick={() => copyText(diff.human, "copy.breakdown")} variant="ghost" className="h-8 w-8 p-1" aria-label={t("copy.breakdown")} title={t("copy.breakdown")}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
-                    </button>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardTitle className="p-3">{t("card.totals")}</CardTitle>
+                <CardContent className="text-sm leading-6">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1"><span className="text-foreground/60">{t("totals.hours")}: </span><span className="font-medium">{diff.totalHours}</span></div>
+                    <Button onClick={() => copyText(`${diff.totalHours}`, "copy.totalHours")} variant="ghost" className="h-8 w-8 p-1" aria-label={t("copy.totalHours")} title={t("copy.totalHours")}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </Button>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1"><span className="text-foreground/60">{t("totals.minutes")}: </span><span className="font-medium">{diff.totalMinutes}</span></div>
-                    <button onClick={() => copyText(`${diff.totalMinutes}`, "copy.totalMinutes")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label={t("copy.totalMinutes")} title={t("copy.totalMinutes")}>
+                    <Button onClick={() => copyText(`${diff.totalMinutes}`, "copy.totalMinutes")} variant="ghost" className="h-8 w-8 p-1" aria-label={t("copy.totalMinutes")} title={t("copy.totalMinutes")}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1"><span className="text-foreground/60">{t("totals.seconds")}: </span><span className="font-medium">{diff.totalSeconds}</span></div>
-                    <button onClick={() => copyText(`${diff.totalSeconds}`, "copy.totalSeconds")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label={t("copy.totalSeconds")} title={t("copy.totalSeconds")}>
+                    <Button onClick={() => copyText(`${diff.totalSeconds}`, "copy.totalSeconds")} variant="ghost" className="h-8 w-8 p-1" aria-label={t("copy.totalSeconds")} title={t("copy.totalSeconds")}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              {/* Dettaglio */}
-              <div className="rounded-lg border border-black/10 dark:border-white/15 p-3">
-                <div className="text-xs text-foreground/60">{t("card.detail")}</div>
-                <div className="mt-2 text-sm leading-6">
+              <Card>
+                <CardTitle className="p-3">{t("card.detail")}</CardTitle>
+                <CardContent className="text-sm leading-6">
                   <div className="flex items-center gap-2">
                     <div className="flex-1"><span className="text-foreground/60">{t("detail.days")}: </span><span className="font-medium">{diff.days}</span></div>
-                    <button onClick={() => copyText(`${diff.days}`, "copy.days")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label={t("copy.days")} title={t("copy.days")}>
+                    <Button onClick={() => copyText(`${diff.days}`, "copy.days")} variant="ghost" className="h-8 w-8 p-1" aria-label={t("copy.days")} title={t("copy.days")}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1"><span className="text-foreground/60">{t("detail.hours")}: </span><span className="font-medium">{diff.hours}</span></div>
-                    <button onClick={() => copyText(`${diff.hours}`, "copy.hours")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label={t("copy.hours")} title={t("copy.hours")}>
+                    <Button onClick={() => copyText(`${diff.hours}`, "copy.hours")} variant="ghost" className="h-8 w-8 p-1" aria-label={t("copy.hours")} title={t("copy.hours")}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1"><span className="text-foreground/60">{t("detail.minutes")}: </span><span className="font-medium">{diff.minutes}</span></div>
-                    <button onClick={() => copyText(`${diff.minutes}`, "copy.minutes")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label={t("copy.minutes")} title={t("copy.minutes")}>
+                    <Button onClick={() => copyText(`${diff.minutes}`, "copy.minutes")} variant="ghost" className="h-8 w-8 p-1" aria-label={t("copy.minutes")} title={t("copy.minutes")}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1"><span className="text-foreground/60">{t("detail.seconds")}: </span><span className="font-medium">{diff.seconds}</span></div>
-                    <button onClick={() => copyText(`${diff.seconds}`, "copy.seconds")} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" aria-label={t("copy.seconds")} title={t("copy.seconds")}>
+                    <Button onClick={() => copyText(`${diff.seconds}`, "copy.seconds")} variant="ghost" className="h-8 w-8 p-1" aria-label={t("copy.seconds")} title={t("copy.seconds")}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>
 
-        <p className="mt-3 text-xs text-foreground/60">
-          {t("note")}
-        </p>
-      </div>
+        <p className="mt-3 text-xs text-foreground/60">{t("note")}</p>
+      </Card>
 
       <Toast open={toastOpen} message={toastMsg} type={toastType} onClose={() => setToastOpen(false)} />
     </section>

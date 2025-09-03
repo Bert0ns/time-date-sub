@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export type DateTimeFieldProps = {
   id: string;
@@ -13,15 +15,14 @@ export type DateTimeFieldProps = {
 export default function DateTimeField({ id, label, value, onChangeAction, className }: DateTimeFieldProps) {
   return (
     <div className={className}>
-      <label htmlFor={id} className="block text-sm font-medium text-foreground/80 mb-1">
+      <Label htmlFor={id} className="mb-1 block">
         {label}
-      </label>
-      <input
+      </Label>
+      <Input
         id={id}
         type="datetime-local"
         value={value}
         onChange={(e) => onChangeAction(e.target.value)}
-        className="w-full rounded-lg border border-black/10 dark:border-white/15 bg-background/60 backdrop-blur px-3 py-2 text-sm outline-none ring-2 ring-transparent focus:ring-black/10 dark:focus:ring-white/20 shadow-sm"
       />
     </div>
   );
