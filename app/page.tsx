@@ -3,6 +3,7 @@
 import {useI18n} from "@/components/I18nProvider";
 import LanguageSelector from "@/components/LanguageSelector";
 import DateDiffCalculator from "@/components/DateDiffCalculator";
+import {ThemeToggleButton} from "@/components/ThemeToggleButton";
 
 export default function Home() {
   const { t } = useI18n();
@@ -16,6 +17,7 @@ export default function Home() {
           <p className="mt-2 text-sm text-foreground/70">{t("app.subtitle")}</p>
         </div>
         <LanguageSelector className="self-center sm:self-auto" />
+        <ThemeToggleButton/>
       </header>
 
       <main className="w-full mt-6 sm:mt-8">
