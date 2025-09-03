@@ -17,7 +17,7 @@ const I18nContext = createContext<I18nContextType | null>(null);
 const dictIt: Dict = {
   "app.title": "Calcolatore differenza tra date",
   "app.subtitle": "Inserisci due date/ore e ottieni la differenza in giorni, ore, minuti e secondi.",
-  "footer.note": "Realizzato con Next.js, React e Tailwind CSS.",
+  "footer.note": "Realizzato con Next.js, React e Tailwind CSS. In collaborazione con GPT-5",
   "lang.label": "Lingua",
   "lang.it": "Italiano",
   "lang.en": "English",
@@ -80,7 +80,7 @@ const dictIt: Dict = {
 const dictEn: Dict = {
   "app.title": "Date difference calculator",
   "app.subtitle": "Enter two dates/times and get the difference in days, hours, minutes and seconds.",
-  "footer.note": "Built with Next.js, React and Tailwind CSS.",
+  "footer.note": "Built with Next.js, React and Tailwind CSS. With GPT-5 assistance",
   "lang.label": "Language",
   "lang.it": "Italiano",
   "lang.en": "English",
