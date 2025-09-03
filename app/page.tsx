@@ -1,16 +1,19 @@
-import { DateDiffCalculator } from "../components";
+"use client";
+
+import { DateDiffCalculator, LanguageSelector, useI18n } from "../components";
 
 export default function Home() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen flex flex-col items-center p-6 sm:p-10">
-      <header className="w-full max-w-3xl text-center sm:text-left">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-          Calcolatore differenza tra date
-        </h1>
-        <p className="mt-2 text-sm text-foreground/70">
-          Inserisci due date/ore e ottieni la differenza in giorni, ore, minuti e
-          secondi.
-        </p>
+      <header className="w-full max-w-3xl flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-0 sm:justify-between text-center sm:text-left">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+            {t("app.title")}
+          </h1>
+          <p className="mt-2 text-sm text-foreground/70">{t("app.subtitle")}</p>
+        </div>
+        <LanguageSelector className="self-center sm:self-auto" />
       </header>
 
       <main className="w-full mt-6 sm:mt-8">
@@ -18,7 +21,7 @@ export default function Home() {
       </main>
 
       <footer className="w-full max-w-3xl mt-10 text-center text-xs text-foreground/60">
-        Realizzato con Next.js, React e Tailwind CSS.
+        {t("footer.note")}
       </footer>
     </div>
   );
