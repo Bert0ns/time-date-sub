@@ -4,6 +4,7 @@ import "./globals.css";
 import React from "react";
 import { headers } from "next/headers";
 import {I18nProvider} from "@/components/I18nProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,6 +53,7 @@ export default async function RootLayout({
     <html lang={ssrLocale}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <I18nProvider initialLocale={ssrLocale}>{children}</I18nProvider>
+        <Toaster richColors closeButton position="top-center" />
       </body>
     </html>
   );

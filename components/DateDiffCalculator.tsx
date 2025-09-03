@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import {useI18n} from "@/components/I18nProvider";
 import DateTimeField from "@/components/DateTimeField";
-import Toast from "@/components/Toast";
+import { toast } from "sonner";
 
 function parseLocalDateTime(value: string): Date | null {
   if (!value) return null;
@@ -92,11 +92,6 @@ export default function DateDiffCalculator() {
     setEndValue("");
   };
 
-  // Toast state
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error" | "info">("info");
-
   // Copia negli appunti (centralizzato)
   function fallbackCopyText(text: string) {
     try {
@@ -124,18 +119,12 @@ export default function DateDiffCalculator() {
   async function copyText(text: string, successMsgKey: string) {
     try {
       if (!text) return;
-      const canUseClipboard = typeof navigator !== "undefined" && !!navigator.clipboard?.writeText && (typeof window === "undefined" || window.isSecureContext);
+      const canUseClipboard = typeof navigator !== "undefined" && !!navigator.clipboard?.writeText && (typeof window === "undefined" || (window as any).isSecureContext);
       if (canUseClipboard) await navigator.clipboard.writeText(text);
       else if (!fallbackCopyText(text)) throw new Error("fallback failed");
-      setToastType("success");
-      setToastMsg(t(successMsgKey));
-      setToastOpen(true);
-      setTimeout(() => setToastOpen(false), 1600);
+      toast.success(t(successMsgKey), { duration: 1600 });
     } catch {
-      setToastType("error");
-      setToastMsg(t("toast.error"));
-      setToastOpen(true);
-      setTimeout(() => setToastOpen(false), 1800);
+      toast.error(t("toast.error"), { duration: 1800 });
     }
   }
 
@@ -284,8 +273,6 @@ export default function DateDiffCalculator() {
 
         <p className="mt-3 text-xs text-foreground/60">{t("note")}</p>
       </Card>
-
-      <Toast open={toastOpen} message={toastMsg} type={toastType} onClose={() => setToastOpen(false)} />
     </section>
   );
 }
