@@ -80,6 +80,59 @@ export default function DateDiffCalculator() {
     setEndValue("");
   };
 
+  // Copia negli appunti
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  function buildClipboardText() {
+    if (!diff || !startDate || !endDate) return "";
+    const lines = [
+      `Differenza tra ${startValue || "-"} e ${endValue || "-"}`,
+      `Stato: ${statusLabel}`,
+      `Scomposizione: ${diff.human}`,
+      `Totali: ${diff.totalHours} ore | ${diff.totalMinutes} minuti | ${diff.totalSeconds} secondi`,
+    ];
+    return lines.join("\n");
+  }
+  function fallbackCopyText(text: string) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; // evita scroll
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      const selection = document.getSelection();
+      const currentRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (currentRange && selection) {
+        selection.removeAllRanges();
+        selection.addRange(currentRange);
+      }
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+  async function handleCopy() {
+    try {
+      const text = buildClipboardText();
+      if (!text) return;
+      const canUseClipboard = typeof navigator !== "undefined" && !!navigator.clipboard?.writeText && (typeof window === "undefined" || window.isSecureContext !== false);
+      if (canUseClipboard) {
+        await navigator.clipboard.writeText(text);
+        setCopyState("copied");
+      } else {
+        const ok = fallbackCopyText(text);
+        setCopyState(ok ? "copied" : "error");
+      }
+      setTimeout(() => setCopyState("idle"), 1500);
+    } catch {
+      setCopyState("error");
+      setTimeout(() => setCopyState("idle"), 1500);
+    }
+  }
+
   return (
     <section className="w-full max-w-3xl mx-auto">
       <div className="rounded-2xl border border-black/10 dark:border-white/15 bg-gradient-to-b from-background/80 to-background/60 shadow-lg p-4 sm:p-6">
@@ -96,8 +149,25 @@ export default function DateDiffCalculator() {
         </div>
 
         <div className="mt-6 rounded-xl bg-background/70 border border-black/10 dark:border-white/15 p-4">
-          <div className="text-xs uppercase tracking-wide text-foreground/60">Stato</div>
-          <div className="mt-1 text-sm font-medium">{statusLabel}</div>
+          <div className="flex items-center gap-2">
+            <div>
+              <div className="text-xs uppercase tracking-wide text-foreground/60">Stato</div>
+              <div className="mt-1 text-sm font-medium">{statusLabel}</div>
+            </div>
+            {startDate && endDate && diff && (
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={handleCopy}
+                  className="px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-black/10 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5"
+                >
+                  Copia risultato
+                </button>
+                <span aria-live="polite" className="text-xs text-foreground/60 min-w-14 text-right">
+                  {copyState === "copied" ? "Copiato" : copyState === "error" ? "Errore" : ""}
+                </span>
+              </div>
+            )}
+          </div>
 
           {startDate && endDate && diff && (
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
