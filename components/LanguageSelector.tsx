@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useI18n } from "./I18nProvider";
+import {useI18n} from "@/components/I18nProvider";
+
 
 export default function LanguageSelector({ className = "" }: { className?: string }) {
   const { locale, setLocale, t } = useI18n();

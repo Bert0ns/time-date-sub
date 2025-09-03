@@ -1,6 +1,8 @@
 "use client";
 
-import { DateDiffCalculator, LanguageSelector, useI18n } from "../components";
+import {useI18n} from "@/components/I18nProvider";
+import LanguageSelector from "@/components/LanguageSelector";
+import DateDiffCalculator from "@/components/DateDiffCalculator";
 
 export default function Home() {
   const { t } = useI18n();
