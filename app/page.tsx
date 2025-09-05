@@ -8,7 +8,7 @@ import {ThemeToggleButton} from "@/components/ThemeToggleButton";
 export default function Home() {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen flex flex-col items-center p-6 sm:p-10">
+    <div className="min-h-screen flex flex-col items-center pt-4 pb-4 sm:p-10">
       <header className="w-full max-w-3xl flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-0 sm:justify-between text-center sm:text-left">
         <div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">

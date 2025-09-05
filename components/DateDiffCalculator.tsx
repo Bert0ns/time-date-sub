@@ -158,7 +158,7 @@ export default function DateDiffCalculator() {
           <Button onClick={() => setNow("start")} variant="outline">{t("btn.nowStart")}</Button>
           <Button onClick={() => setNow("end")} variant="outline">{t("btn.nowEnd")}</Button>
           <Button onClick={swap} variant="outline">{t("btn.swap")}</Button>
-          <Button onClick={clearAll} variant="outline" className="ml-auto">{t("btn.clear")}</Button>
+          <Button onClick={clearAll} variant="outline" >{t("btn.clear")}</Button>
         </div>
 
         <div className="mt-6 rounded-xl border border-black/10 dark:border-white/15 p-4">
